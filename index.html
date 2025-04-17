@@ -4,52 +4,235 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Sinh Tồn RPG</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Reset và style cơ bản */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+
+        /* Phần tải file và gửi prompt */
+        .file-upload {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #3498db;
+            background-color: #fff;
+            color: #333;
+        }
+
+        textarea {
+            width: 90%;
+            height: 150px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #3498db;
+            background-color: #fff;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        /* Phần hiển thị phản hồi từ AI */
+        .response-section {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .response-section h2 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .story {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table th,
+        .info-table td {
+            border: 1px solid #3498db;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .info-table th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .info-table td {
+            background-color: #ecf0f1;
+            color: #333;
+        }
+
+        /* Icon và ký hiệu */
+        .icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <header class="game-header">
-            <h1>Survival RPG Game</h1>
-            <p>Một thế giới sinh tồn đầy thử thách đang chờ bạn khám phá!</p>
-        </header>
+        <h1>Game Sinh Tồn RPG</h1>
 
-        <!-- Main Content -->
-        <main class="game-content">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <h2>Thông tin nhân vật</h2>
-                <div id="character-info">
-                    <!-- Thông tin sẽ được cập nhật từ backend -->
-                </div>
-            </aside>
+        <!-- Phần tải file và gửi prompt -->
+        <div class="file-upload">
+            <input type="file" id="fileInput" accept=".txt,.docx,.json">
+            <textarea id="promptContent" placeholder="Nội dung prompt sẽ hiển thị ở đây..."></textarea>
+            <button id="sendPromptButton">Gửi Prompt</button>
+        </div>
 
-            <!-- Main Display -->
-            <section class="main-display">
-                <!-- Phần nhập prompt -->
-                <div class="prompt-input">
-                    <label for="fileInput">Tải prompt từ file:</label>
-                    <input type="file" id="fileInput" accept=".txt,.docx">
-                    <button id="sendPromptButton">Gửi Prompt</button>
-                </div>
-
-                <!-- Hiển thị nội dung prompt như văn bản Word -->
-                <div class="prompt-display">
-                    <h2>Prompt hiện tại</h2>
-                    <div id="promptContent" class="word-like-text">
-                        <!-- Nội dung prompt sẽ hiển thị ở đây -->
-                    </div>
-                </div>
-
-                <!-- Phản hồi từ AI -->
-                <div class="ai-response">
-                    <h2>Phản hồi từ AI</h2>
-                    <pre id="aiResponse"></pre>
-                </div>
-            </section>
-        </main>
+        <!-- Phần hiển thị phản hồi từ AI -->
+        <div class="response-section">
+            <h2><span class="icon">📜</span>Phản hồi từ AI:</h2>
+            <div class="story" id="aiStory"></div>
+            <table class="info-table" id="aiInfoTable">
+                <thead>
+                    <tr>
+                        <th>Mục</th>
+                        <th>Thông tin</th>
+                        <th>Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu từ AI sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Lấy các phần tử DOM
+        const fileInput = document.getElementById('fileInput');
+        const promptContent = document.getElementById('promptContent');
+        const sendPromptButton = document.getElementById('sendPromptButton');
+        const aiStory = document.getElementById('aiStory');
+        const aiInfoTable = document.getElementById('aiInfoTable').getElementsByTagName('tbody')[0];
+
+        // Xử lý khi người dùng chọn file
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    promptContent.value = e.target.result; // Hiển thị nội dung file
+                };
+                reader.readAsText(file); // Đọc nội dung file dưới dạng text
+            } else {
+                promptContent.value = ''; // Xóa nội dung nếu không chọn file
+            }
+        });
+
+        // Xử lý khi nhấn nút "Gửi Prompt"
+        sendPromptButton.addEventListener('click', async () => {
+            const prompt = promptContent.value.trim(); // Lấy nội dung từ textarea
+            if (!prompt) {
+                alert("Vui lòng chọn một file hoặc nhập prompt.");
+                return;
+            }
+
+            try {
+                // Gửi request đến backend với prompt
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerId: '652f8e1b1c9d440000a1b2c3', message: prompt }),
+                });
+
+                const data = await response.json();
+
+                // Hiển thị phần dẫn truyện
+                aiStory.innerHTML = `<p>${data.response.story}</p>`;
+
+                // Hiển thị bảng thông tin
+                aiInfoTable.innerHTML = ''; // Xóa bảng cũ
+                const updates = data.response.updates;
+
+                // Thêm thông tin nhân vật
+                if (updates.character) {
+                    const character = updates.character;
+                    aiInfoTable.innerHTML += `
+                        <tr>
+                            <td><span class="icon">🌍</span>Môi trường xung quanh</td>
+                            <td>${character.environment.location}</td>
+                            <td>${character.environment.details}</td>
+                        </tr>
+                        <tr>
+                            <td><span class="icon">❤️</span>Trạng thái cơ thể</td>
+                            <td>Bao tử: ${character.health.stomach.capacity}ml (${character.health.stomach.digestionStatus}%)</td>
+                            <td>${character.health.details}</td>
+                        </tr>
+                    `;
+                }
+
+                // Thêm thông tin túi đồ
+                if (updates.inventory) {
+                    updates.inventory.forEach(item => {
+                        aiInfoTable.innerHTML += `
+                            <tr>
+                                <td><span class="icon">🎒</span>Túi đồ</td>
+                                <td>${item.item} (${item.quantity})</td>
+                                <td>Durability: ${item.durability}%</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error("Lỗi khi gửi prompt:", error.message);
+                aiStory.innerHTML = "<p>Có lỗi xảy ra khi gửi prompt.</p>";
+            }
+        });
+    </script>
 </body>
 </html>
