@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Qwen</title>
+</head>
+<body>
+    <h1>Chat with Qwen</h1>
+    <form id="chatForm">
+        <label for="message">Nhập hành động của bạn:</label><br>
+        <input type="text" id="message" name="message" style="width: 300px;"><br><br>
+        <button type="submit">Gửi</button>
+    </form>
+    <h2>Phản hồi từ Qwen:</h2>
+    <pre id="response"></pre>
+
+    <script>
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message').value;
+
+            // Gửi request đến backend
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerId: '652f8e1b1c9d440000a1b2c3', message }),
+            });
+
+            const data = await response.json();
+            document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+        });
+    </script>
+</body>
+</html>
