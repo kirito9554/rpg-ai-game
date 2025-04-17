@@ -1,34 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with Qwen</title>
+    <title>Tải Prompt từ File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Chat with Qwen</h1>
-    <form id="chatForm">
-        <label for="message">Nhập hành động của bạn:</label><br>
-        <input type="text" id="message" name="message" style="width: 300px;"><br><br>
-        <button type="submit">Gửi</button>
-    </form>
-    <h2>Phản hồi từ Qwen:</h2>
-    <pre id="response"></pre>
+    <h1>Tải Prompt từ File</h1>
+
+    <!-- Input để chọn file -->
+    <input type="file" id="fileInput" accept=".txt,.docx,.json">
+
+    <!-- Hiển thị nội dung file -->
+    <textarea id="fileContent" placeholder="Nội dung file sẽ hiển thị ở đây..."></textarea>
+
+    <!-- Nút gửi prompt -->
+    <button id="sendPromptButton">Gửi Prompt</button>
+
+    <!-- Hiển thị kết quả phản hồi từ AI -->
+    <div class="output">
+        <h2>Phản hồi từ AI:</h2>
+        <pre id="aiResponse"></pre>
+    </div>
 
     <script>
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = document.getElementById('message').value;
+        // Lấy các phần tử DOM
+        const fileInput = document.getElementById('fileInput');
+        const fileContent = document.getElementById('fileContent');
+        const sendPromptButton = document.getElementById('sendPromptButton');
+        const aiResponse = document.getElementById('aiResponse');
 
-            // Gửi request đến backend
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playerId: '652f8e1b1c9d440000a1b2c3', message }),
-            });
+        // Xử lý khi người dùng chọn file
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileContent.value = e.target.result; // Hiển thị nội dung file
+                };
+                reader.readAsText(file); // Đọc nội dung file dưới dạng text
+            } else {
+                fileContent.value = ''; // Xóa nội dung nếu không chọn file
+            }
+        });
 
-            const data = await response.json();
-            document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+        // Xử lý khi nhấn nút "Gửi Prompt"
+        sendPromptButton.addEventListener('click', async () => {
+            const prompt = fileContent.value.trim(); // Lấy nội dung từ textarea
+            if (!prompt) {
+                alert("Vui lòng chọn một file hoặc nhập prompt.");
+                return;
+            }
+
+            try {
+                // Gửi request đến backend với prompt
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerId: '652f8e1b1c9d440000a1b2c3', message: prompt }),
+                });
+
+                const data = await response.json();
+                aiResponse.textContent = JSON.stringify(data, null, 2); // Hiển thị phản hồi từ AI
+            } catch (error) {
+                console.error("Lỗi khi gửi prompt:", error.message);
+                aiResponse.textContent = "Có lỗi xảy ra khi gửi prompt.";
+            }
         });
     </script>
 </body>
